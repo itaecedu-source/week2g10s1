@@ -1,87 +1,787 @@
-import random
-import time
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boot Sequence — Logic Warm-Up</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
-def welcome():
-    """Display game rules and welcome message and return player name."""
-    print("Welcome to the Easy ICT Quiz!")
-    print("Type 1 for HARDWARE (Parts you can touch)")
-    print("Type 2 for SOFTWARE (Programs inside)")
-    print("You have 60 seconds!")
-    name = input("Enter your name: ")
-    return name
+:root{
+  --bg1:#eaf6ff;
+  --bg2:#dbeeff;
+  --ink:#0f1b2d;
+  --ink-soft:#4b5d72;
+  --cyan:#06b6d4;
+  --cyan-deep:#0891b2;
+  --purple:#7c3aed;
+  --pink:#ec4899;
+  --amber:#f59e0b;
+  --green:#10b981;
+  --red:#ef4444;
+  --card:#ffffff;
+  --card-line:#dbe8f2;
+}
 
-def initialize(duration):
-    """Initialize the quiz timer and return the start time."""
-    print(f"Timer set for {duration} seconds. Get ready!")
-    return time.time()
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  min-height:100vh;
+  font-family:'Inter',sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 15% 10%, #ffffffcc 0%, transparent 40%),
+    radial-gradient(circle at 90% 85%, #cdeaff 0%, transparent 45%),
+    linear-gradient(160deg, var(--bg1), var(--bg2));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
 
-def generate_question():
-    """Generate a random ICT item and its correct category code."""
-    # 1 = Hardware, 2 = Software
-    ict_items = {
-        "Mouse": 1,
-        "Keyboard": 1,
-        "Windows": 2,
-        "Monitor": 1,
-        "WhatsApp": 2,
-        "Printer": 1,
-        "YouTube": 2,
-        "Camera": 1
+.stage{
+  width:100%;
+  max-width:640px;
+  min-height:560px;
+  background:var(--card);
+  border-radius:28px;
+  box-shadow:0 20px 60px -20px rgba(15,27,45,0.25), 0 2px 8px rgba(15,27,45,0.06);
+  border:1px solid var(--card-line);
+  overflow:hidden;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ---------- HEADER ---------- */
+.hud{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:16px 22px;
+  border-bottom:1px solid var(--card-line);
+  background:linear-gradient(180deg,#ffffff, #fbfeff);
+}
+.hud-title{
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:700;
+  font-size:15px;
+  letter-spacing:0.2px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.hud-title .dot{
+  width:9px;height:9px;border-radius:50%;
+  background:var(--cyan);
+  box-shadow:0 0 0 4px #06b6d422;
+}
+.hud-right{display:flex;gap:8px;}
+.pill{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:12.5px;
+  font-weight:600;
+  padding:6px 12px;
+  border-radius:999px;
+  background:#f1f8fd;
+  border:1px solid var(--card-line);
+  color:var(--ink-soft);
+  display:flex;align-items:center;gap:6px;
+  min-width:64px;
+  justify-content:center;
+}
+.pill b{color:var(--ink);font-weight:700;}
+
+.progress-row{
+  display:flex;
+  gap:6px;
+  padding:0 22px;
+  margin-top:12px;
+}
+.progress-seg{
+  flex:1;
+  height:6px;
+  border-radius:99px;
+  background:#e7f1f9;
+  overflow:hidden;
+}
+.progress-seg > i{
+  display:block;
+  height:100%;
+  width:0%;
+  border-radius:99px;
+  background:linear-gradient(90deg,var(--cyan),var(--purple));
+  transition:width .4s ease;
+}
+
+/* ---------- MAIN ---------- */
+.main{
+  flex:1;
+  padding:22px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.screen{display:none;flex-direction:column;gap:16px;height:100%;}
+.screen.active{display:flex;animation:fadein .35s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* ---- START SCREEN ---- */
+#screen-start{align-items:center;justify-content:center;text-align:center;padding-top:6px;}
+.bot{
+  width:92px;height:92px;
+  margin-bottom:6px;
+  filter:drop-shadow(0 10px 18px rgba(124,58,237,0.25));
+}
+h1.title{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:26px;
+  margin:0 0 6px;
+  line-height:1.15;
+}
+h1.title span{
+  background:linear-gradient(90deg,var(--cyan-deep),var(--purple));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.subtitle{
+  color:var(--ink-soft);
+  font-size:14.5px;
+  max-width:400px;
+  line-height:1.5;
+  margin:0 0 18px;
+}
+.brief-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  width:100%;
+  max-width:380px;
+  margin:0 0 22px;
+}
+.brief-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#f8fbfe;
+  border:1px solid var(--card-line);
+  border-radius:14px;
+  padding:10px 14px;
+  font-size:13.5px;
+  text-align:left;
+  color:var(--ink-soft);
+}
+.brief-item .num{
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:700;
+  color:#fff;
+  width:22px;height:22px;
+  border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;
+  flex-shrink:0;
+}
+.brief-item:nth-child(1) .num{background:var(--pink);}
+.brief-item:nth-child(2) .num{background:var(--cyan);}
+.brief-item:nth-child(3) .num{background:var(--amber);}
+
+button.primary{
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:700;
+  font-size:15px;
+  color:#fff;
+  background:linear-gradient(90deg,var(--cyan-deep),var(--purple));
+  border:none;
+  padding:14px 34px;
+  border-radius:14px;
+  cursor:pointer;
+  box-shadow:0 10px 24px -8px rgba(124,58,237,0.5);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+button.primary:hover{transform:translateY(-2px);box-shadow:0 14px 28px -8px rgba(124,58,237,0.6);}
+button.primary:active{transform:translateY(0px) scale(.98);}
+
+/* ---- ROUND HEADER (shared) ---- */
+.round-head{display:flex;flex-direction:column;gap:3px;}
+.round-kicker{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:11.5px;
+  font-weight:700;
+  color:var(--purple);
+  letter-spacing:.3px;
+}
+.round-q{
+  font-size:16.5px;
+  font-weight:600;
+  line-height:1.4;
+  color:var(--ink);
+}
+.round-hint{font-size:12.5px;color:var(--ink-soft);}
+
+/* ---- ROUND 1: symbol scan ---- */
+.shape-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:4px;
+}
+.shape-card{
+  background:#f8fbfe;
+  border:2px solid var(--card-line);
+  border-radius:16px;
+  padding:16px 10px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  cursor:pointer;
+  transition:transform .12s ease, border-color .12s ease, background .12s ease;
+}
+.shape-card:hover{transform:translateY(-2px);border-color:#c6def0;}
+.shape-card.correct{border-color:var(--green);background:#effaf4;}
+.shape-card.wrong{border-color:var(--red);background:#fdf1f1;animation:shake .35s;}
+.shape-card.dim{opacity:.45;pointer-events:none;}
+.shape-card span{font-size:12.5px;font-weight:600;color:var(--ink-soft);}
+
+.sym{width:64px;height:44px;display:flex;align-items:center;justify-content:center;}
+.sym-oval{width:66px;height:36px;border-radius:50%;background:linear-gradient(160deg,#f9a8d4,var(--pink));box-shadow:0 6px 14px -6px rgba(236,72,153,.6);}
+.sym-parallelogram{width:64px;height:36px;background:linear-gradient(160deg,#67e8f9,var(--cyan));transform:skewX(-18deg);box-shadow:0 6px 14px -6px rgba(6,182,212,.6);}
+.sym-rectangle{width:60px;height:38px;border-radius:6px;background:linear-gradient(160deg,#6ee7b7,var(--green));box-shadow:0 6px 14px -6px rgba(16,185,129,.6);}
+.sym-diamond{width:42px;height:42px;background:linear-gradient(160deg,#fde68a,var(--amber));transform:rotate(45deg);border-radius:5px;box-shadow:0 6px 14px -6px rgba(245,158,11,.6);}
+
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  25%{transform:translateX(-6px);}
+  75%{transform:translateX(6px);}
+}
+
+/* ---- ROUND 2: sequence sprint ---- */
+.seq-list{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
+.seq-card{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:#f8fbfe;
+  border:2px solid var(--card-line);
+  border-radius:14px;
+  padding:12px 14px;
+  cursor:pointer;
+  font-size:13.5px;
+  font-weight:500;
+  transition:border-color .12s ease, background .12s ease;
+}
+.seq-card:hover{border-color:#c6def0;}
+.seq-card.picked{border-color:var(--purple);background:#f5f0fe;}
+.seq-card.wrong{border-color:var(--red);background:#fdf1f1;animation:shake .35s;}
+.seq-badge{
+  width:26px;height:26px;border-radius:8px;
+  background:#e7f1f9;
+  color:var(--ink-soft);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:700;
+  font-size:13px;
+  flex-shrink:0;
+}
+.seq-card.picked .seq-badge{background:linear-gradient(135deg,var(--cyan-deep),var(--purple));color:#fff;}
+
+.row-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:auto;}
+button.ghost{
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:600;
+  font-size:13.5px;
+  color:var(--ink-soft);
+  background:#f1f8fd;
+  border:1px solid var(--card-line);
+  padding:10px 16px;
+  border-radius:12px;
+  cursor:pointer;
+}
+button.check{
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:700;
+  font-size:13.5px;
+  color:#fff;
+  background:linear-gradient(90deg,var(--cyan-deep),var(--purple));
+  border:none;
+  padding:10px 20px;
+  border-radius:12px;
+  cursor:pointer;
+  opacity:.4;
+  pointer-events:none;
+  transition:opacity .15s ease;
+}
+button.check.ready{opacity:1;pointer-events:auto;}
+
+/* ---- ROUND 3: IPO sort ---- */
+.chip-tray{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;}
+.chip{
+  background:#f8fbfe;
+  border:2px solid var(--card-line);
+  border-radius:11px;
+  padding:9px 13px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  transition:border-color .12s ease, background .12s ease, opacity .2s ease;
+}
+.chip:hover{border-color:#c6def0;}
+.chip.selected{border-color:var(--purple);background:#f5f0fe;color:var(--purple);}
+.chip.placed{opacity:0;pointer-events:none;width:0;padding:0;border:none;}
+
+.bins{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:auto;}
+.bin{
+  border:2px dashed var(--card-line);
+  border-radius:16px;
+  min-height:118px;
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  cursor:pointer;
+  transition:border-color .15s ease, background .15s ease;
+}
+.bin:hover{border-color:#bcdcf4;background:#f8fbfe;}
+.bin.flash{border-color:var(--red);background:#fdf1f1;animation:shake .3s;}
+.bin-label{
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:700;
+  font-size:12px;
+  text-align:center;
+  padding:4px 0 6px;
+}
+.bin[data-bin="input"] .bin-label{color:var(--pink);}
+.bin[data-bin="process"] .bin-label{color:var(--cyan-deep);}
+.bin[data-bin="output"] .bin-label{color:var(--amber);}
+.bin-chip{
+  background:#eef8fb;
+  border-radius:9px;
+  padding:6px 8px;
+  font-size:11.5px;
+  font-weight:600;
+  text-align:center;
+  color:var(--ink);
+}
+
+/* ---- RESULTS ---- */
+#screen-results{align-items:center;justify-content:center;text-align:center;}
+.stars{font-size:40px;letter-spacing:6px;margin:6px 0 4px;}
+.score-big{
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:700;
+  font-size:44px;
+  background:linear-gradient(90deg,var(--cyan-deep),var(--purple));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.score-sub{color:var(--ink-soft);font-size:13.5px;margin-bottom:18px;}
+.result-tags{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;justify-content:center;}
+.result-tag{
+  background:#f1f8fd;border:1px solid var(--card-line);
+  border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:600;color:var(--ink-soft);
+}
+
+/* Toast feedback */
+.toast{
+  position:absolute;
+  top:14px;left:50%;
+  transform:translateX(-50%) translateY(-40px);
+  background:var(--ink);
+  color:#fff;
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:600;
+  font-size:12.5px;
+  padding:8px 16px;
+  border-radius:99px;
+  opacity:0;
+  transition:all .25s ease;
+  pointer-events:none;
+  z-index:10;
+  white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.good{background:var(--green);}
+.toast.bad{background:var(--red);}
+
+@media (max-width:420px){
+  .bins{grid-template-columns:1fr;}
+  h1.title{font-size:22px;}
+  .score-big{font-size:36px;}
+}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="hud">
+    <div class="hud-title"><span class="dot"></span> Boot Sequence</div>
+    <div class="hud-right">
+      <div class="pill">⏱ <b id="hud-time">0:00</b></div>
+      <div class="pill">⚡ <b id="hud-score">0</b>/12</div>
+    </div>
+  </div>
+  <div class="progress-row" id="progress-row">
+    <div class="progress-seg"><i id="seg1"></i></div>
+    <div class="progress-seg"><i id="seg2"></i></div>
+    <div class="progress-seg"><i id="seg3"></i></div>
+  </div>
+
+  <div class="main">
+
+    <!-- START -->
+    <div class="screen active" id="screen-start">
+      <svg class="bot" viewBox="0 0 100 100" fill="none">
+        <rect x="30" y="38" width="40" height="34" rx="10" fill="url(#g1)"/>
+        <circle cx="50" cy="22" r="16" fill="url(#g2)"/>
+        <circle cx="43" cy="20" r="3.4" fill="#0f1b2d"/>
+        <circle cx="57" cy="20" r="3.4" fill="#0f1b2d"/>
+        <rect x="46" y="4" width="8" height="10" rx="4" fill="url(#g2)"/>
+        <circle cx="50" cy="4" r="3.5" fill="var(--pink)"/>
+        <rect x="14" y="46" width="12" height="8" rx="4" fill="var(--cyan)"/>
+        <rect x="74" y="46" width="12" height="8" rx="4" fill="var(--purple)"/>
+        <defs>
+          <linearGradient id="g1" x1="30" y1="38" x2="70" y2="72" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#a78bfa"/><stop offset="1" stop-color="#7c3aed"/>
+          </linearGradient>
+          <linearGradient id="g2" x1="34" y1="6" x2="66" y2="38" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#67e8f9"/><stop offset="1" stop-color="#06b6d4"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <h1 class="title">Logic Warm-Up: <span>Boot Sequence</span></h1>
+      <p class="subtitle">Before we build the ICT Quiz Game, warm up your circuits. Three quick rounds. Race the clock.</p>
+      <div class="brief-list">
+        <div class="brief-item"><span class="num">1</span> Symbol Scan — name that flowchart shape</div>
+        <div class="brief-item"><span class="num">2</span> Sequence Sprint — order the build steps</div>
+        <div class="brief-item"><span class="num">3</span> IPO Sort — input, process, or output?</div>
+      </div>
+      <button class="primary" id="btn-start">Start warm-up</button>
+    </div>
+
+    <!-- ROUND 1 -->
+    <div class="screen" id="screen-r1">
+      <div class="round-head">
+        <div class="round-kicker">ROUND 1 · SYMBOL SCAN</div>
+        <div class="round-q" id="r1-question">Which symbol marks the START or STOP of a program?</div>
+        <div class="round-hint">Tap the matching flowchart symbol.</div>
+      </div>
+      <div class="shape-grid" id="r1-grid"></div>
+    </div>
+
+    <!-- ROUND 2 -->
+    <div class="screen" id="screen-r2">
+      <div class="round-head">
+        <div class="round-kicker">ROUND 2 · SEQUENCE SPRINT</div>
+        <div class="round-q">Put the incremental programming steps in order.</div>
+        <div class="round-hint">Tap the cards from first step to last, then check.</div>
+      </div>
+      <div class="seq-list" id="r2-list"></div>
+      <div class="row-actions">
+        <button class="ghost" id="r2-reset">Reset</button>
+        <button class="check" id="r2-check">Check order</button>
+      </div>
+    </div>
+
+    <!-- ROUND 3 -->
+    <div class="screen" id="screen-r3">
+      <div class="round-head">
+        <div class="round-kicker">ROUND 3 · IPO SORT</div>
+        <div class="round-q">Sort each step from the mark-total program.</div>
+        <div class="round-hint">Tap a chip, then tap the bin it belongs in.</div>
+      </div>
+      <div class="chip-tray" id="r3-tray"></div>
+      <div class="bins" id="r3-bins">
+        <div class="bin" data-bin="input"><div class="bin-label">INPUT</div></div>
+        <div class="bin" data-bin="process"><div class="bin-label">PROCESS</div></div>
+        <div class="bin" data-bin="output"><div class="bin-label">OUTPUT</div></div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="screen" id="screen-results">
+      <div class="round-kicker">SYSTEM SAVED</div>
+      <div class="stars" id="res-stars">⭐⭐⭐</div>
+      <div class="score-big" id="res-score">12/12</div>
+      <div class="score-sub" id="res-sub">Cleared in 0:00 — circuits fully warmed up.</div>
+      <div class="result-tags">
+        <div class="result-tag">Symbol Scan ✓</div>
+        <div class="result-tag">Sequence Sprint ✓</div>
+        <div class="result-tag">IPO Sort ✓</div>
+      </div>
+      <button class="primary" id="btn-again">Run it back</button>
+    </div>
+
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+(function(){
+  const state = { score:0, startTime:null, timerInt:null, elapsed:0 };
+
+  const $ = sel => document.querySelector(sel);
+  const hudScore = $('#hud-time') ? null : null;
+  const toastEl = $('#toast');
+
+  function showToast(msg, type){
+    toastEl.textContent = msg;
+    toastEl.className = 'toast show ' + (type||'');
+    clearTimeout(toastEl._t);
+    toastEl._t = setTimeout(()=> toastEl.className = 'toast', 900);
+  }
+
+  function setScore(n){
+    state.score = n;
+    document.getElementById('hud-score').textContent = state.score;
+  }
+
+  function startTimer(){
+    state.startTime = Date.now();
+    state.timerInt = setInterval(()=>{
+      const s = Math.floor((Date.now()-state.startTime)/1000);
+      const m = Math.floor(s/60), r = s%60;
+      document.getElementById('hud-time').textContent = m+':'+String(r).padStart(2,'0');
+      state.elapsed = s;
+    },250);
+  }
+  function stopTimer(){ clearInterval(state.timerInt); }
+
+  function goScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function setProgress(seg, pct){
+    document.getElementById('seg'+seg).style.width = pct+'%';
+  }
+
+  /* ---------------- ROUND 1 ---------------- */
+  const r1Questions = [
+    { q:"Which symbol marks the START or STOP of a program?", answer:'oval' },
+    { q:"Which symbol shows data going IN or OUT?", answer:'parallelogram' },
+    { q:"Which symbol is a process or calculation step?", answer:'rectangle' },
+    { q:"Which symbol is a yes / no decision point?", answer:'diamond' },
+  ];
+  const shapeDefs = {
+    oval:{cls:'sym-oval', label:'Oval'},
+    parallelogram:{cls:'sym-parallelogram', label:'Parallelogram'},
+    rectangle:{cls:'sym-rectangle', label:'Rectangle'},
+    diamond:{cls:'sym-diamond', label:'Diamond'},
+  };
+  let r1Index = 0;
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
     }
-    item = random.choice(list(ict_items.keys()))
-    category_code = ict_items[item]
-    
-    # We return dummy variables to keep the structure (number_1, number_2, operation)
-    return item, category_code, "Check"
+    return a;
+  }
 
-def calculate(item_name, correct_code, operation):
-    """Returns the correct code to match the original function signature."""
-    return correct_code
+  function renderR1(){
+    const item = r1Questions[r1Index];
+    document.getElementById('r1-question').textContent = item.q;
+    const grid = document.getElementById('r1-grid');
+    grid.innerHTML = '';
+    const keys = shuffle(Object.keys(shapeDefs));
+    keys.forEach(key=>{
+      const def = shapeDefs[key];
+      const card = document.createElement('div');
+      card.className = 'shape-card';
+      card.innerHTML = `<div class="sym"><div class="${def.cls}"></div></div><span>${def.label}</span>`;
+      card.addEventListener('click', ()=> handleR1Pick(key, card));
+      grid.appendChild(card);
+    });
+    setProgress(1, Math.round((r1Index/r1Questions.length)*100));
+  }
 
-def correct_answer():
-    """Display correct answer message."""
-    print("✅ Correct! Well done.")
+  function handleR1Pick(key, card){
+    const cards = document.querySelectorAll('#r1-grid .shape-card');
+    cards.forEach(c=> c.classList.add('dim'));
+    const correct = r1Questions[r1Index].answer;
+    if(key === correct){
+      card.classList.remove('dim');
+      card.classList.add('correct');
+      setScore(state.score+1);
+      showToast('Correct','good');
+    } else {
+      card.classList.remove('dim');
+      card.classList.add('wrong');
+      showToast('Not quite','bad');
+    }
+    setTimeout(()=>{
+      r1Index++;
+      if(r1Index < r1Questions.length){
+        renderR1();
+      } else {
+        setProgress(1,100);
+        goScreen('screen-r2');
+        renderR2();
+      }
+    }, 650);
+  }
 
-def incorrect_answer():
-    """Display incorrect answer message."""
-    print("❌ Not quite! Try again.")
+  /* ---------------- ROUND 2 ---------------- */
+  const r2Steps = [
+    "Start with a very small, working part",
+    "Test it until it works perfectly",
+    "Add the next feature",
+    "Repeat until the system is complete"
+  ];
+  let r2Order = [];       // shuffled display order (indices into r2Steps)
+  let r2Picked = [];      // indices (into r2Order) picked so far, in click order
 
-def display(score):
-    """Display the final score."""
-    print(f"Your final ICT score is: {score}")
+  function renderR2(){
+    r2Order = shuffle(r2Steps.map((_,i)=>i));
+    r2Picked = [];
+    const list = document.getElementById('r2-list');
+    list.innerHTML = '';
+    r2Order.forEach((stepIdx, pos)=>{
+      const card = document.createElement('div');
+      card.className = 'seq-card';
+      card.dataset.pos = pos;
+      card.innerHTML = `<div class="seq-badge">?</div><div>${r2Steps[stepIdx]}</div>`;
+      card.addEventListener('click', ()=> handleR2Pick(pos, card));
+      list.appendChild(card);
+    });
+    updateCheckBtn();
+  }
 
-def play():
-    """Run the main quiz loop exactly like the math game."""
-    score = 0
-    duration = 60
-    name = welcome()
-    start_time = initialize(duration)
+  function handleR2Pick(pos, card){
+    if(card.classList.contains('picked')) return;
+    r2Picked.push(pos);
+    card.classList.add('picked');
+    card.querySelector('.seq-badge').textContent = r2Picked.length;
+    updateCheckBtn();
+  }
 
-    while time.time() - start_time < duration:
-        # Get the item and the correct answer code
-        item_name, correct, operation = generate_question()
-        
-        # We ask the question using the same format as the math game
-        question = f"Is {item_name} (1) Hardware or (2) Software? "
-        
-        try:
-            # Keep the float/input structure for weak students to just type a number
-            answer = float(input(f"{name}, {question}"))
-            
-            if abs(answer - correct) < 0.01:
-                correct_answer()
-                score += 1
-            else:
-                incorrect_answer()
-                score -= 1
-        except ValueError:
-            print("⚠️ Invalid input. Please enter 1 or 2.")
-            score -= 1
+  function updateCheckBtn(){
+    const btn = document.getElementById('r2-check');
+    if(r2Picked.length === r2Steps.length) btn.classList.add('ready');
+    else btn.classList.remove('ready');
+  }
 
-    display(score)
+  document.getElementById('r2-reset').addEventListener('click', renderR2);
 
-def main():
-    """Start the ICT version of the quiz."""
-    play()
+  document.getElementById('r2-check').addEventListener('click', ()=>{
+    if(r2Picked.length !== r2Steps.length) return;
+    // correct order means: the step at picked position 'pos' should equal its natural order 0..3
+    const chosenSequence = r2Picked.map(pos => r2Order[pos]); // step indices in the order clicked
+    const isCorrect = chosenSequence.every((stepIdx, i) => stepIdx === i);
+    if(isCorrect){
+      setScore(state.score + r2Steps.length);
+      showToast('Sequence locked in','good');
+      setProgress(2,100);
+      setTimeout(()=>{
+        goScreen('screen-r3');
+        renderR3();
+      }, 550);
+    } else {
+      showToast('Order not quite right','bad');
+      document.querySelectorAll('#r2-list .seq-card.picked').forEach(c=>{
+        c.classList.add('wrong');
+        setTimeout(()=>c.classList.remove('wrong'), 400);
+      });
+      setTimeout(renderR2, 500);
+    }
+  });
 
-main()
+  /* ---------------- ROUND 3 ---------------- */
+  const r3Chips = [
+    { text:'Enter mark1', bin:'input' },
+    { text:'Enter mark2', bin:'input' },
+    { text:'total = mark1 + mark2', bin:'process' },
+    { text:'Display total', bin:'output' },
+  ];
+  let r3Selected = null;
+  let r3Placed = 0;
+
+  function renderR3(){
+    r3Placed = 0;
+    r3Selected = null;
+    const tray = document.getElementById('r3-tray');
+    tray.innerHTML = '';
+    shuffle(r3Chips).forEach((chipData, i)=>{
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.textContent = chipData.text;
+      chip.dataset.bin = chipData.bin;
+      chip.addEventListener('click', ()=> selectChip(chip));
+      tray.appendChild(chip);
+    });
+    document.querySelectorAll('#r3-bins .bin').forEach(b=>{
+      b.querySelectorAll('.bin-chip').forEach(el=>el.remove());
+    });
+  }
+
+  function selectChip(chip){
+    if(chip.classList.contains('placed')) return;
+    document.querySelectorAll('#r3-tray .chip').forEach(c=>c.classList.remove('selected'));
+    chip.classList.add('selected');
+    r3Selected = chip;
+  }
+
+  document.querySelectorAll('#r3-bins .bin').forEach(bin=>{
+    bin.addEventListener('click', ()=>{
+      if(!r3Selected) { 
+        bin.classList.add('flash');
+        setTimeout(()=>bin.classList.remove('flash'),300);
+        return;
+      }
+      if(r3Selected.dataset.bin === bin.dataset.bin){
+        const tag = document.createElement('div');
+        tag.className = 'bin-chip';
+        tag.textContent = r3Selected.textContent;
+        bin.appendChild(tag);
+        r3Selected.classList.add('placed');
+        r3Selected = null;
+        r3Placed++;
+        setScore(state.score+1);
+        showToast('Sorted','good');
+        setProgress(3, Math.round((r3Placed/r3Chips.length)*100));
+        if(r3Placed === r3Chips.length){
+          setTimeout(finishGame, 500);
+        }
+      } else {
+        bin.classList.add('flash');
+        showToast('Wrong bin','bad');
+        setTimeout(()=>bin.classList.remove('flash'),300);
+      }
+    });
+  });
+
+  /* ---------------- RESULTS ---------------- */
+  function finishGame(){
+    stopTimer();
+    const s = Math.floor((Date.now()-state.startTime)/1000);
+    const m = Math.floor(s/60), r = s%60;
+    document.getElementById('res-score').textContent = state.score + '/12';
+    document.getElementById('res-sub').textContent = `Cleared in ${m}:${String(r).padStart(2,'0')} — ` +
+      (state.score===12 ? 'flawless run, circuits fully warmed up.' : 'nice work, circuits warmed up.');
+    let stars = '⭐⭐⭐';
+    if(state.score < 6) stars = '⭐';
+    else if(state.score < 10) stars = '⭐⭐';
+    document.getElementById('res-stars').textContent = stars;
+    goScreen('screen-results');
+  }
+
+  document.getElementById('btn-start').addEventListener('click', ()=>{
+    setScore(0);
+    setProgress(1,0); setProgress(2,0); setProgress(3,0);
+    startTimer();
+    goScreen('screen-r1');
+    r1Index = 0;
+    renderR1();
+  });
+
+  document.getElementById('btn-again').addEventListener('click', ()=>{
+    goScreen('screen-start');
+  });
+
+})();
+</script>
+
+</body>
+</html>
