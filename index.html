@@ -1,0 +1,87 @@
+import random
+import time
+
+def welcome():
+    """Display game rules and welcome message and return player name."""
+    print("Welcome to the Easy ICT Quiz!")
+    print("Type 1 for HARDWARE (Parts you can touch)")
+    print("Type 2 for SOFTWARE (Programs inside)")
+    print("You have 60 seconds!")
+    name = input("Enter your name: ")
+    return name
+
+def initialize(duration):
+    """Initialize the quiz timer and return the start time."""
+    print(f"Timer set for {duration} seconds. Get ready!")
+    return time.time()
+
+def generate_question():
+    """Generate a random ICT item and its correct category code."""
+    # 1 = Hardware, 2 = Software
+    ict_items = {
+        "Mouse": 1,
+        "Keyboard": 1,
+        "Windows": 2,
+        "Monitor": 1,
+        "WhatsApp": 2,
+        "Printer": 1,
+        "YouTube": 2,
+        "Camera": 1
+    }
+    item = random.choice(list(ict_items.keys()))
+    category_code = ict_items[item]
+    
+    # We return dummy variables to keep the structure (number_1, number_2, operation)
+    return item, category_code, "Check"
+
+def calculate(item_name, correct_code, operation):
+    """Returns the correct code to match the original function signature."""
+    return correct_code
+
+def correct_answer():
+    """Display correct answer message."""
+    print("✅ Correct! Well done.")
+
+def incorrect_answer():
+    """Display incorrect answer message."""
+    print("❌ Not quite! Try again.")
+
+def display(score):
+    """Display the final score."""
+    print(f"Your final ICT score is: {score}")
+
+def play():
+    """Run the main quiz loop exactly like the math game."""
+    score = 0
+    duration = 60
+    name = welcome()
+    start_time = initialize(duration)
+
+    while time.time() - start_time < duration:
+        # Get the item and the correct answer code
+        item_name, correct, operation = generate_question()
+        
+        # We ask the question using the same format as the math game
+        question = f"Is {item_name} (1) Hardware or (2) Software? "
+        
+        try:
+            # Keep the float/input structure for weak students to just type a number
+            answer = float(input(f"{name}, {question}"))
+            
+            if abs(answer - correct) < 0.01:
+                correct_answer()
+                score += 1
+            else:
+                incorrect_answer()
+                score -= 1
+        except ValueError:
+            print("⚠️ Invalid input. Please enter 1 or 2.")
+            score -= 1
+
+    display(score)
+
+def main():
+    """Start the ICT version of the quiz."""
+    play()
+
+main()
